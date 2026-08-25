@@ -1,0 +1,77 @@
+name: Daily README Update
+
+on:
+  # 8:30 AM IST = 3:00 AM UTC
+  schedule:
+    - cron: '0 3 * * *'
+
+  # Manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git configuration
+        run: |
+          git config --local user.email "shyam.s.ops@gmail.com"
+          git config --local user.name "Shyam Singh"
+
+      - name: Update README with current date and time
+        run: |
+          CURRENT_DATETIME=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')
+
+          python3 <<EOF
+          from pathlib import Path
+
+          path = Path("README.md")
+          content = path.read_text()
+
+          start = "<!-- AUTO-UPDATE-START -->"
+          end = "<!-- AUTO-UPDATE-END -->"
+
+          new_section = f"""<!-- AUTO-UPDATE-START -->
+          **Last Updated:** {CURRENT_DATETIME}
+
+          *This section is automatically updated daily at 8:30 AM IST by GitHub Actions.*
+          <!-- AUTO-UPDATE-END -->"""
+
+          if start in content and end in content:
+              before = content.split(start)[0]
+              after = content.split(end, 1)[1]
+              content = before + new_section + after
+          else:
+              content += f"""
+
+          ---
+
+          {new_section}
+          """
+
+          path.write_text(content)
+          EOF
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git add README.md
+          git commit -m "chore: auto-update README with current timestamp"
+          git push
