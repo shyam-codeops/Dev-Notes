@@ -78,5 +78,5 @@ jobs:
         if: steps.check_changes.outputs.changes == 'true'
         run: |
           git add README.md
-          git commit -m "chore: auto-update README with current timestamp"
+          git commit -m "Routine maintenance"
           git push
