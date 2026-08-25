@@ -47,7 +47,6 @@ jobs:
 
           new_section = f"""<!-- AUTO-UPDATE-START -->
           **Last Updated:** {current_datetime}
-
           <!-- AUTO-UPDATE-END -->"""
 
           if start in content and end in content:
