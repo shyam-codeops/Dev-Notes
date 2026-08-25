@@ -28,25 +28,29 @@ jobs:
 
       - name: Update README with current date and time
         run: |
-          CURRENT_DATETIME=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')
-
-          python3 <<EOF
+          python3 <<'PYTHON'
           from pathlib import Path
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
 
           path = Path("README.md")
           content = path.read_text()
+
+          current_datetime = datetime.now(
+              ZoneInfo("Asia/Kolkata")
+          ).strftime("%Y-%m-%d %H:%M:%S IST")
 
           start = "<!-- AUTO-UPDATE-START -->"
           end = "<!-- AUTO-UPDATE-END -->"
 
           new_section = f"""<!-- AUTO-UPDATE-START -->
-          **Last Updated:** {CURRENT_DATETIME}
+          **Last Updated:** {current_datetime}
 
           *This section is automatically updated daily at 8:30 AM IST by GitHub Actions.*
           <!-- AUTO-UPDATE-END -->"""
 
           if start in content and end in content:
-              before = content.split(start)[0]
+              before = content.split(start, 1)[0]
               after = content.split(end, 1)[1]
               content = before + new_section + after
           else:
@@ -58,7 +62,7 @@ jobs:
           """
 
           path.write_text(content)
-          EOF
+          PYTHON
 
       - name: Check for changes
         id: check_changes
