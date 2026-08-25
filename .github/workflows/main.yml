@@ -46,7 +46,6 @@ jobs:
           new_section = f"""<!-- AUTO-UPDATE-START -->
           **Last Updated:** {current_datetime}
 
-          *This section is automatically updated daily at 8:30 AM IST by GitHub Actions.*
           <!-- AUTO-UPDATE-END -->"""
 
           if start in content and end in content:
